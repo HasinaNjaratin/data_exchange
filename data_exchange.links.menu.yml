@@ -1,0 +1,6 @@
+data_exchange.admin:
+  title: 'Data exchange settings'
+  description: 'To configure import/export'
+  parent: system.admin_config_development
+  route_name: data_exchange.admin
+  weight: 100

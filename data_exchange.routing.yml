@@ -1,0 +1,7 @@
+data_exchange.admin:
+  path: '/admin/config/data-exchange'
+  defaults:
+    _controller: 'Drupal\data_exchange\Controller\DataExchangeMenu::adminPage'
+    _title: 'Data exchange settings'
+  requirements:
+    _permission: 'administer nodes'

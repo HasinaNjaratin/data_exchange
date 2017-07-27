@@ -1,0 +1,6 @@
+name: Data exchange
+description: An experimental module to import or export bundle via cron in drupal 8
+package: Data exchange
+type: module
+version: 1.0
+core: 8.x

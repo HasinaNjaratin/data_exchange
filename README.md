@@ -1,2 +1,2 @@
 # data_exchange
-Drupal 8 :: import/export des contenus en cron configurable
+Drupal 8 :: Import / export of contents via cron

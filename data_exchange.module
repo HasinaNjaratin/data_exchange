@@ -1,0 +1,19 @@
+<?php
+
+function data_exchange_form_node_type_form_alter(&$form, &$form_state) {
+    $form['data_exchange'] = array(
+      '#type' => 'details',
+      '#title' => t('Data exchange settings'),
+      '#open' => TRUE,
+      '#weight' => 10,
+      '#group' => 'additional_settings',
+    );
+    $form['data_exchange']['importable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow to import data'),
+    );
+    $form['data_exchange']['exportable'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow to export data'),
+    );
+}
