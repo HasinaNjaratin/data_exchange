@@ -1,0 +1,4 @@
+data-exchange:
+  version: 1.x
+  css:
+    css/data-exchange.css: {}

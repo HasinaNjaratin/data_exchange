@@ -1,15 +1,8 @@
 <?php
 use Drupal\Core\Form\FormStateInterface;
 
-/**
- * Implements of hook_init()
- */
-function data_exchange_init(){
-  if(is_null(\Drupal::config('data_exchange.settings')->get('dataX'))){
-    \Drupal::config('data_exchange.settings')
-        ->set('dataX', ['importable' => [],'exportable' => []])
-        ->save();
-  }
+if(is_null(\Drupal::state()->get('dataX'))) {
+  \Drupal::state()->set('dataX', ['importable' => [],'exportable' => []]);
 }
 
 /**
@@ -23,13 +16,13 @@ function data_exchange_form_node_type_form_alter(&$form, FormStateInterface $for
     '#weight' => 10,
     '#group' => 'additional_settings',
   );
-  $isImportableNode = !empty($form['type']['#default_value'])?\Drupal::config('data_exchange.settings')->get($form['type']['#default_value'].'_importable'):0;
+  $isImportableNode = !empty($form['type']['#default_value'])?\Drupal::state()->get($form['type']['#default_value'].'_importable'):0;
   $form['data_exchange']['importable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow to import data'),
     '#default_value' => $isImportableNode
   );
-  $isExportableNode = !empty($form['type']['#default_value'])?\Drupal::config('data_exchange.settings')->get($form['type']['#default_value'].'_exportable'):0;
+  $isExportableNode = !empty($form['type']['#default_value'])?\Drupal::state()->get($form['type']['#default_value'].'_exportable'):0;
   $form['data_exchange']['exportable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow to export data'),
@@ -43,30 +36,31 @@ function data_exchange_form_node_type_form_alter(&$form, FormStateInterface $for
  * Settings content type :: data_exchange submission part
  */
 function data_exchange_node_type_submit($form, FormStateInterface $form_state){
-  // $dataX = \Drupal::config('data_exchange.settings')->get('dataX');
-  // /*$content_type = $form_state->getValue('type');
-  // $node_fields = get_fields_in($content_type);
-  // // Importability
-  // $isImportable = $form_state->getValue('importable');
-  // // \Drupal::config('data_exchange.settings')
-  // //       ->set('dataX', $isImportable)
-  // //       ->save();
-  // if($isImportable && !isset($dataX['importable'][$content_type])){
-  //   //$dataX['importable'][$content_type]=$node_fields;
-  // }else{
-  //   //unset($dataX['importable'][$content_type]);
-  // }
-  // // Exportability
-  // $isExportable = $form_state->getValue('exportable');
-  // // \Drupal::config('data_exchange.settings')
-  // //       ->set('dataX', $isExportable)
-  // //       ->save();
-  // if($isExportable && !isset($dataX['exportable'][$content_type])){
-  //   //$dataX['exportable'][$content_type]=$node_fields;
-  // }else{
-  //   //unset($dataX['exportable'][$content_type]);
-  // }*/
-  // dpm($dataX);
+  $dataX = \Drupal::state()->get('dataX');
+  $content_type = $form_state->getValue('type');
+  $node_fields = get_fields_in($content_type);
+  // Importability
+  $isImportable = $form_state->getValue('importable');
+  \Drupal::state()->set($content_type.'_importable', $isImportable);
+  if($isImportable){
+    if(!isset($dataX['importable'][$content_type])){
+      $dataX['importable'][$content_type]=$node_fields;
+    }
+  }else{
+    unset($dataX['importable'][$content_type]);
+  }
+  // Exportability
+  $isExportable = $form_state->getValue('exportable');
+  \Drupal::state()->set($content_type.'_exportable', $isExportable);
+  if($isExportable){
+    if(!isset($dataX['exportable'][$content_type])){
+      $dataX['exportable'][$content_type]=$node_fields;
+    }
+  }else{
+    unset($dataX['exportable'][$content_type]);
+  }
+  // Set dataX
+  \Drupal::state()->set('dataX', $dataX);
 }
 
 /**
@@ -78,7 +72,10 @@ function get_fields_in($content_type){
   foreach ($node_fields as $field_id => $info) {
     if(is_object($info) && $field_id != 'comment'){
       if(is_a($info, 'Drupal\field\Entity\FieldConfig')){
-        $fields[] = $field_id;
+        $fields[]= [
+          'name' => $field_id,
+          'status' => 1,
+        ];
       }
     }
   }

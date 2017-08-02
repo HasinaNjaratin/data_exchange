@@ -22,11 +22,65 @@ class adminSettingsForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    
-    $form['utilisateur_sendMail'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('M\'envoyer un mail de confirmation.'),
+    $dataX = \Drupal::state()->get('dataX');
+    // Import settings
+    $form['importable_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Import settings'),
+      '#weight' => 50,
+      '#collapsible' => true,
+      '#collapsed' => true,
     );
+    foreach ($dataX['importable'] as $content_type => $fields) {
+      $form['importable_settings'][$content_type] = array(
+        '#type' => 'fieldset',
+        '#title' => $content_type,
+        '#weight' => 50,
+        '#collapsible' => true,
+        '#collapsed' => false,
+      );
+      foreach ($fields as $key => $field_name) {
+        $form['importable_settings'][$content_type][$content_type.'_'.$field_name['name']] = array(
+          '#type' => 'checkbox',
+          '#title' => $field_name['name'],
+          '#default_value' => $field_name['status'],
+          '#prefix' => "<div class='fields-settings-item'>"
+        );
+        $form['importable_settings'][$content_type][$content_type.'_'.$field_name['name'].'_column'] = array(
+          '#type' => 'textfield',
+          '#size' => 11,
+          '#default_value' => isset($field_name['key'])?$field_name['key']:$key,
+          '#suffix' => '</div>'
+        );
+        $form['importable_settings'][$content_type][$content_type.'_'.$field_name['name'].'_column']['#attributes']['placeholder'] = '[num column]';
+      }
+    }
+    // Export settings
+    $form['exportable_settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Export settings'),
+      '#weight' => 50,
+      '#collapsible' => true,
+      '#collapsed' => true,
+    );
+    foreach ($dataX['exportable'] as $content_type => $fields) {
+      $form['exportable_settings'][$content_type] = array(
+        '#type' => 'fieldset',
+        '#title' => $content_type,
+        '#weight' => 50,
+        '#collapsible' => true,
+        '#collapsed' => false,
+      );
+      foreach ($fields as $field_name) {
+        $form['exportable_settings'][$content_type][$content_type.'_'.$field_name] = array(
+          '#type' => 'checkbox',
+          '#title' => $field_name,
+          '#attributes' => array('class' => array('item-row-weight')),
+        );
+      }
+    }
+    // style
+    $form['#attached']['library'][] = 'data-exchange/data-exchange.css';
     $form['actions']['#type'] = 'actions';
     $form['actions']['submit'] = array(
       '#type' => 'submit',
