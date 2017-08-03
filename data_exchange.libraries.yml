@@ -1,4 +1,4 @@
-data-exchange:
-  version: 1.x
+form-styling:
   css:
-    css/data-exchange.css: {}
+    component:
+      css/form-styling.css: {}
