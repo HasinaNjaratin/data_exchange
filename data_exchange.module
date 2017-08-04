@@ -2,7 +2,7 @@
 use Drupal\Core\Form\FormStateInterface;
 
 if(is_null(\Drupal::state()->get('dataX'))) {
-  \Drupal::state()->set('dataX', ['importable' => [],'exportable' => []]);
+  \Drupal::state()->set('dataX', ['import' => [],'export' => []]);
 }
 
 /**
@@ -43,21 +43,21 @@ function data_exchange_node_type_submit($form, FormStateInterface $form_state){
   $isImportable = $form_state->getValue('importable');
   \Drupal::state()->set($content_type.'_importable', $isImportable);
   if($isImportable){
-    if(!isset($dataX['importable'][$content_type])){
-      $dataX['importable'][$content_type]=$node_fields;
+    if(!isset($dataX['import'][$content_type])){
+      $dataX['import'][$content_type]=$node_fields;
     }
   }else{
-    unset($dataX['importable'][$content_type]);
+    unset($dataX['import'][$content_type]);
   }
   // Exportability
   $isExportable = $form_state->getValue('exportable');
   \Drupal::state()->set($content_type.'_exportable', $isExportable);
   if($isExportable){
-    if(!isset($dataX['exportable'][$content_type])){
-      $dataX['exportable'][$content_type]=$node_fields;
+    if(!isset($dataX['export'][$content_type])){
+      $dataX['export'][$content_type]=$node_fields;
     }
   }else{
-    unset($dataX['exportable'][$content_type]);
+    unset($dataX['export'][$content_type]);
   }
   // Set dataX
   \Drupal::state()->set('dataX', $dataX);
@@ -71,10 +71,13 @@ function get_fields_in($content_type){
   $fields = [];
   foreach ($node_fields as $field_id => $info) {
     if(is_object($info) && $field_id != 'comment'){
-      if(is_a($info, 'Drupal\field\Entity\FieldConfig')){
+      if(is_a($info, 'Drupal\field\Entity\FieldConfig') && (strpos($info->getType(), 'image') === false)){
         $fields[]= [
           'name' => $field_id,
+          'label' => $info->label(),
+          'type' => $info->getType(),
           'status' => 1,
+          'key' => count($fields),
         ];
       }
     }

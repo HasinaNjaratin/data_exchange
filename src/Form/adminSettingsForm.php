@@ -21,10 +21,10 @@ class adminSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $dataX = \Drupal::state()->get('dataX');
+  public function buildForm(array $form, FormStateInterface $form_state) {   
+    $dataX = \Drupal::state()->get('dataX'); 
     // Import settings
-    $form['importable_settings'] = array(
+    $form['import_settings'] = array(
       '#type' => 'fieldset',
       '#title' => t('Import settings'),
       '#weight' => 50,
@@ -32,7 +32,7 @@ class adminSettingsForm extends FormBase {
       '#collapsed' => true,
     );
     // Export settings
-    $form['exportable_settings'] = array(
+    $form['export_settings'] = array(
       '#type' => 'fieldset',
       '#title' => t('Export settings'),
       '#weight' => 50,
@@ -49,20 +49,29 @@ class adminSettingsForm extends FormBase {
           '#collapsible' => true,
           '#collapsed' => false,
         );
-        foreach ($fields as $key => $field_name) {
-          $form[$type.'_settings'][$content_type][$content_type.'_'.$field_name['name']] = array(
+        foreach ($fields as $key => $field) {
+          $form[$type.'_settings'][$content_type][$type.'_'.$content_type.'_'.$field['name']] = array(
             '#type' => 'checkbox',
-            '#title' => $field_name['name'],
-            '#default_value' => $field_name['status'],
-            '#prefix' => "<div class='fields-settings-item'>"
+            '#title' => $field['name'],
+            '#default_value' => $field['status'],
+            '#prefix' => "<div class='fields-settings-item'>".(($type == "export")?"<div class='fields-export-column'>":""),
           );
-          $form[$type.'_settings'][$content_type][$content_type.'_'.$field_name['name'].'_column'] = array(
+          if($type == "export"){
+            $form[$type.'_settings'][$content_type][$type.'_'.$content_type.'_'.$field['name'].'_label'] = array(
+              '#type' => 'textfield',
+              '#size' => 20,
+              '#default_value' => isset($field['label'])?$field['label']:$field['name'],
+              '#attributes' => ['placeholder'=>'[numLabel]'],
+              '#suffix' => '</div>'
+            );
+          }
+          $form[$type.'_settings'][$content_type][$type.'_'.$content_type.'_'.$field['name'].'_column'] = array(
             '#type' => 'textfield',
-            '#size' => 11,
-            '#default_value' => isset($field_name['key'])?$field_name['key']:$key,
+            '#size' => 7,
+            '#default_value' => isset($field['key'])?$field['key']:$key,
+            '#attributes' => ['placeholder'=>'[numCol]'],
             '#suffix' => '</div>'
           );
-          $form[$type.'_settings'][$content_type][$content_type.'_'.$field_name['name'].'_column']['#attributes']['placeholder'] = '[num column]';
         }
       }
     }
@@ -82,15 +91,38 @@ class adminSettingsForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    
+    // Check duplicate column num
+    $dataX = \Drupal::state()->get('dataX');
+    foreach ($dataX as $type => $data) {
+      foreach ($data as $content_type => $fields) {
+        $numCol=[];
+        foreach ($fields as $key => $field) {
+          $numColField = $form_state->getValue($type.'_'.$content_type.'_'.$field['name'].'_column');
+          if( in_array($numColField,$numCol) ){
+            $form_state->setErrorByName($type.'_'.$content_type.'_'.$field['name'].'_column', t('Duplicate Column num ['.$type.'-'.$content_type.']. Please, reverify!'));
+          }else{
+            $numCol[] = $numColField;
+          }
+        }
+      }
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    
+    $dataX = \Drupal::state()->get('dataX');
+    foreach ($dataX as $type => $data) {
+      foreach ($data as $content_type => $fields) {
+        foreach ($fields as $key => $field) {
+          $dataX[$type][$content_type][$key]['status'] = $form_state->getValue($type.'_'.$content_type.'_'.$field['name']);
+          $dataX[$type][$content_type][$key]['label'] = $form_state->getValue($type.'_'.$content_type.'_'.$field['name'].'_label');
+          $dataX[$type][$content_type][$key]['key'] = $form_state->getValue($type.'_'.$content_type.'_'.$field['name'].'_column');
+        }
+      }
+    }
+    // Set dataX
+    \Drupal::state()->set('dataX', $dataX);
   }
-
-
 }
