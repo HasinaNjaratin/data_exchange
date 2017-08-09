@@ -1,5 +1,5 @@
 <?php
-
+use Drupal\ultimate_cron\Entity\CronJob;
 require_once drupal_get_path('module', 'data_exchange') .'/includes/data_exchange.alter-form.inc';
 require_once drupal_get_path('module', 'data_exchange') .'/includes/data_exchange.cron.inc';
 
@@ -28,3 +28,56 @@ function get_fields_in($content_type){
   }
   return $fields;
 }
+
+// Default cron-function, configurable through /admin/config/system/cron
+function data_exchange_cron() {
+  // Do some stuff ...
+}
+
+
+// Define custom cron functions.
+function data_exchange_cronapi($op, $job = NULL) {
+  return array(
+    'data_exchange_cronjob_1' => array(
+      'title' => 'Cron-1 Handler',
+      'scheduler' => array(
+        'name' => 'crontab',
+        'crontab' => array(
+          'rules' => array('*/5 * * *'),
+        ),
+      ),
+    ),
+    'data_exchange_cronjob_2' => array(
+      'title' => 'Cron-2 Handler',
+      'callback' => 'data_exchange_somefunction',
+      'scheduler' => array(
+        'name' => 'crontab',
+        'crontab' => array(
+          'rules' => array('*/2 * * *'),
+        ),
+      ),
+    ),
+  );
+}
+
+// Custom cron-function
+function data_exchange_cronjob_1($job) {
+  $public = \Drupal::service('file_system')->realpath("public://");
+    $path = $public.DIRECTORY_SEPARATOR."import.txt";
+    unlink($path);
+}
+
+// Custom cron-function
+function data_exchange_somefunction($job) {
+  $public = \Drupal::service('file_system')->realpath("public://");
+    $path = $public.DIRECTORY_SEPARATOR."export.txt";
+    unlink($path);
+}
+/**
+ * The callback for the cron job,
+ */
+/*function data_exchange_my_cron_job($job) {
+  $public = \Drupal::service('file_system')->realpath("public://");
+    $path = $public.DIRECTORY_SEPARATOR."export.txt";
+    unlink($path);
+}*/

@@ -1,12 +1,12 @@
 <?php
 use Drupal\Core\Cron;
 use Drupal\data_exchange\Plugin\QueueWorker;
-use Drupal\ultimate_cron\Entity\CronJob;
+
 
 /**
  * Implements hook_cron().
  */
-function data_exchange_cron() {
+/*function data_exchange_cron() {
   // Get queue.
   // $queue = \Drupal::queue('data_exchangeQueueWorker');
 
@@ -26,4 +26,6 @@ function data_exchange_cron() {
 
   // Create item to queue.
   // $queue->createItem($item);
-}
+}*/
+
+
